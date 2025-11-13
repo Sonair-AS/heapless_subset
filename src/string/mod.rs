@@ -901,7 +901,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Debug for StringInner<LenT, 
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Display for StringInner<LenT, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <str as fmt::Display>::fmt(self, f)
@@ -968,18 +968,16 @@ impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<[u8]> for StringInner<LenT,
     }
 }
 
-    //#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStorage + ?Sized>
     PartialEq<StringInner<LenT1, S1>> for StringInner<LenT2, S2>
 {
     fn eq(&self, rhs: &StringInner<LenT1, S1>) -> bool {
-        false
-        //str::eq(&**self, &**rhs)
+        str::eq(&**self, &**rhs)
     }
 }
 
-// String<N> == str
-    #[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
@@ -988,7 +986,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<Le
 }
 
 // String<N> == &'str
-    #[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
@@ -997,7 +995,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<L
 }
 
 // str == String<N>
-    #[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
@@ -1006,7 +1004,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> f
 }
 
 // &'str == String<N>
-    #[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for &str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
@@ -1014,7 +1012,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> f
     }
 }
 
-    #[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> Eq for StringInner<LenT, S> {}
 
 #[cfg(not(feature = "certified_subset"))]
