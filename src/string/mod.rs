@@ -1,15 +1,26 @@
 //! A fixed capacity [`String`](https://doc.rust-lang.org/std/string/struct.String.html).
 
+#[cfg(not(feature = "certified_subset"))]
+use core::iter;
 use core::{
-    borrow,
-    char::DecodeUtf16Error,
-    cmp::Ordering,
-    fmt,
-    fmt::{Arguments, Write},
-    hash, iter,
-    ops::{self, Range, RangeBounds},
+    ops::{self},
     str::{self, Utf8Error},
 };
+#[cfg(not(feature = "certified_subset"))]
+use core::cmp::Ordering;
+#[cfg(not(feature = "certified_subset"))]
+use core::ops::{RangeBounds, Range};
+#[cfg(not(feature = "certified_subset"))]
+use core::hash;
+#[cfg(not(feature = "certified_subset"))]
+use core::char::DecodeUtf16Error;
+#[cfg(not(feature = "certified_subset"))]
+use core::borrow;
+
+#[cfg(not(feature = "certified_subset"))]
+use core::fmt;
+#[cfg(not(feature = "certified_subset"))]
+use core::fmt::{Arguments, Write};
 
 use crate::CapacityError;
 use crate::{
@@ -17,7 +28,9 @@ use crate::{
     vec::{OwnedVecStorage, Vec, VecInner, ViewVecStorage},
 };
 
+#[cfg(not(feature = "certified_subset"))]
 mod drain;
+#[cfg(not(feature = "certified_subset"))]
 pub use drain::Drain;
 
 /// A possible error value when converting a [`String`] from a UTF-16 byte slice.
@@ -25,7 +38,7 @@ pub use drain::Drain;
 /// This type is the error type for the [`from_utf16`] method on [`String`].
 ///
 /// [`from_utf16`]: String::from_utf16
-#[derive(Debug)]
+#[cfg(not(feature = "certified_subset"))]
 pub enum FromUtf16Error {
     /// The capacity of the `String` is too small for the given operation.
     Capacity(CapacityError),
@@ -33,6 +46,7 @@ pub enum FromUtf16Error {
     DecodeUtf16(DecodeUtf16Error),
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl fmt::Display for FromUtf16Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -42,8 +56,10 @@ impl fmt::Display for FromUtf16Error {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::error::Error for FromUtf16Error {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl From<CapacityError> for FromUtf16Error {
     fn from(e: CapacityError) -> Self {
         Self::Capacity(e)
@@ -193,6 +209,7 @@ impl<LenT: LenType, const N: usize> String<N, LenT> {
     /// assert!(String::<10>::from_utf16(v).is_err());
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn from_utf16(v: &[u16]) -> Result<Self, FromUtf16Error> {
         let mut s = Self::new();
 
@@ -334,6 +351,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// s.drain(..);
     /// assert_eq!(s, "");
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn drain<R>(&mut self, range: R) -> Drain<'_, LenT>
     where
         R: RangeBounds<usize>,
@@ -536,6 +554,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// # Ok::<(), heapless::CapacityError>(())
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn push(&mut self, c: char) -> Result<(), CapacityError> {
         match c.len_utf8() {
             1 => self.vec.push(c as u8).map_err(|_| CapacityError),
@@ -572,6 +591,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// # Ok::<(), heapless::CapacityError>(())
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn truncate(&mut self, new_len: usize) {
         if new_len <= self.len() {
             assert!(self.is_char_boundary(new_len));
@@ -599,6 +619,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// assert_eq!(s.pop(), None);
     /// Ok::<(), heapless::CapacityError>(())
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn pop(&mut self) -> Option<char> {
         let ch = self.chars().next_back()?;
 
@@ -636,6 +657,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// assert_eq!(s.remove(0), 'o');
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn remove(&mut self, index: usize) -> char {
         let ch = self[index..]
             .chars()
@@ -703,6 +725,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// # Ok::<(), heapless::CapacityError>(())
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn insert(&mut self, idx: usize, ch: char) -> Result<(), CapacityError> {
         assert!(self.is_char_boundary(idx), "index must be a char boundary");
 
@@ -763,6 +786,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> StringInner<LenT, S> {
     /// # Ok::<(), heapless::CapacityError>(())
     /// ```
     #[inline]
+    #[cfg(not(feature = "certified_subset"))]
     pub fn insert_str(&mut self, idx: usize, string: &str) -> Result<(), CapacityError> {
         assert!(self.is_char_boundary(idx), "index must be a char boundary");
 
@@ -818,6 +842,7 @@ impl<'a, LenT: LenType, const N: usize> TryFrom<&'a str> for String<N, LenT> {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, const N: usize> str::FromStr for String<N, LenT> {
     type Err = CapacityError;
 
@@ -828,6 +853,7 @@ impl<LenT: LenType, const N: usize> str::FromStr for String<N, LenT> {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, const N: usize> iter::FromIterator<char> for String<N, LenT> {
     fn from_iter<T: IntoIterator<Item = char>>(iter: T) -> Self {
         let mut new = Self::new();
@@ -838,6 +864,7 @@ impl<LenT: LenType, const N: usize> iter::FromIterator<char> for String<N, LenT>
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<'a, LenT: LenType, const N: usize> iter::FromIterator<&'a char> for String<N, LenT> {
     fn from_iter<T: IntoIterator<Item = &'a char>>(iter: T) -> Self {
         let mut new = Self::new();
@@ -848,6 +875,7 @@ impl<'a, LenT: LenType, const N: usize> iter::FromIterator<&'a char> for String<
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<'a, LenT: LenType, const N: usize> iter::FromIterator<&'a str> for String<N, LenT> {
     fn from_iter<T: IntoIterator<Item = &'a str>>(iter: T) -> Self {
         let mut new = Self::new();
@@ -866,18 +894,21 @@ impl<LenT: LenType, const N: usize> Clone for String<N, LenT> {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Debug for StringInner<LenT, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <str as fmt::Debug>::fmt(self, f)
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Display for StringInner<LenT, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <str as fmt::Display>::fmt(self, f)
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> hash::Hash for StringInner<LenT, S> {
     #[inline]
     fn hash<H: hash::Hasher>(&self, hasher: &mut H) {
@@ -885,6 +916,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> hash::Hash for StringInner<LenT, 
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Write for StringInner<LenT, S> {
     fn write_str(&mut self, s: &str) -> Result<(), fmt::Error> {
         self.push_str(s).map_err(|_| fmt::Error)
@@ -909,11 +941,13 @@ impl<LenT: LenType, S: StringStorage + ?Sized> ops::DerefMut for StringInner<Len
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> borrow::Borrow<str> for StringInner<LenT, S> {
     fn borrow(&self) -> &str {
         self.as_str()
     }
 }
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> borrow::BorrowMut<str> for StringInner<LenT, S> {
     fn borrow_mut(&mut self) -> &mut str {
         self.as_mut_str()
@@ -934,15 +968,18 @@ impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<[u8]> for StringInner<LenT,
     }
 }
 
+    //#[cfg(not(feature = "certified_subset"))]
 impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStorage + ?Sized>
     PartialEq<StringInner<LenT1, S1>> for StringInner<LenT2, S2>
 {
     fn eq(&self, rhs: &StringInner<LenT1, S1>) -> bool {
-        str::eq(&**self, &**rhs)
+        false
+        //str::eq(&**self, &**rhs)
     }
 }
 
 // String<N> == str
+    #[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
@@ -951,6 +988,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<Le
 }
 
 // String<N> == &'str
+    #[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
@@ -959,6 +997,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<L
 }
 
 // str == String<N>
+    #[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
@@ -967,6 +1006,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> f
 }
 
 // &'str == String<N>
+    #[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for &str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
@@ -974,8 +1014,10 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> f
     }
 }
 
+    #[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> Eq for StringInner<LenT, S> {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStorage + ?Sized>
     PartialOrd<StringInner<LenT1, S1>> for StringInner<LenT2, S2>
 {
@@ -985,6 +1027,7 @@ impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStora
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> Ord for StringInner<LenT, S> {
     #[inline]
     fn cmp(&self, other: &Self) -> Ordering {
@@ -1007,6 +1050,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> Ord for StringInner<LenT, S> {
 ///
 /// [`format!`]: crate::format!
 #[doc(hidden)]
+#[cfg(not(feature = "certified_subset"))]
 pub fn format<const N: usize, LenT: LenType>(
     args: Arguments<'_>,
 ) -> Result<String<N, LenT>, fmt::Error> {
@@ -1057,6 +1101,7 @@ pub fn format<const N: usize, LenT: LenType>(
 /// # Ok(())
 /// # }
 /// ```
+#[cfg(not(feature = "certified_subset"))]
 #[macro_export]
 macro_rules! format {
     // Without semicolon as separator to disambiguate between arms, Rust just
@@ -1075,6 +1120,7 @@ macro_rules! format {
     }};
 }
 
+#[cfg(not(feature = "certified_subset"))]
 macro_rules! impl_try_from_num {
     ($num:ty, $size:expr) => {
         impl<LenT: LenType, const N: usize> core::convert::TryFrom<$num> for String<N, LenT> {
@@ -1088,14 +1134,22 @@ macro_rules! impl_try_from_num {
     };
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(i8, 4);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(i16, 6);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(i32, 11);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(i64, 20);
 
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(u8, 3);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(u16, 5);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(u32, 10);
+#[cfg(not(feature = "certified_subset"))]
 impl_try_from_num!(u64, 20);
 
 #[cfg(test)]

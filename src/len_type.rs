@@ -1,8 +1,10 @@
 use core::{
-    fmt::{Debug, Display},
     ops::{Add, AddAssign, Sub, SubAssign},
 };
+#[cfg(not(feature = "certified_subset"))]
+use core::fmt::{Debug, Display};
 
+#[cfg(not(feature = "certified_subset"))]
 pub trait Sealed:
     Send
     + Sync
@@ -54,6 +56,56 @@ pub trait Sealed:
     }
 }
 
+#[cfg(feature = "certified_subset")]
+pub trait Sealed:
+    Send
+    + Sync
+    + Copy
+    + PartialEq
+    + Add<Output = Self>
+    + AddAssign
+    + Sub<Output = Self>
+    + SubAssign
+    + PartialOrd
+    + TryFrom<usize>
+    + TryInto<usize>
+{
+    /// The zero value of the integer type.
+    const ZERO: Self;
+    /// The one value of the integer type.
+    const MAX: Self;
+    /// The maximum value of this type, as a `usize`.
+    const MAX_USIZE: usize;
+
+    /// The one value of the integer type.
+    ///
+    /// It's a function instead of constant because we want to have implementation which panics for
+    /// type `ZeroLenType`
+    fn one() -> Self;
+
+    /// An infallible conversion from `usize` to `LenT`.
+    #[inline]
+    fn from_usize(val: usize) -> Self {
+        val.try_into().unwrap_or_else(|_| unreachable!())
+    }
+
+    /// An infallible conversion from `LenT` to `usize`.
+    #[inline]
+    fn into_usize(self) -> usize {
+        self.try_into().unwrap_or_else(|_| unreachable!())
+    }
+
+    /// Converts `LenT` into `Some(usize)`, unless it's `Self::MAX`, where it returns `None`.
+    #[inline]
+    fn to_non_max(self) -> Option<usize> {
+        if self == Self::MAX {
+            None
+        } else {
+            Some(self.into_usize())
+        }
+    }
+}
+
 macro_rules! impl_lentype {
     ($($(#[$meta:meta])* $LenT:ty),*) => {$(
         $(#[$meta])*
@@ -78,7 +130,9 @@ macro_rules! impl_lentype {
 pub trait LenType: Sealed {}
 
 impl_lentype!(
+    #[cfg(not(feature = "certified_subset"))]
     u8,
+    #[cfg(not(feature = "certified_subset"))]
     u16,
     #[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
     u32,

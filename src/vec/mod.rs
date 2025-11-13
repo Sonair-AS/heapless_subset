@@ -1,29 +1,43 @@
 //! A fixed capacity [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html).
 
+#[cfg(not(feature = "certified_subset"))]
 use core::borrow;
+#[cfg(not(feature = "certified_subset"))]
+use core::fmt;
+#[cfg(not(feature = "certified_subset"))]
+use core::hash;
 use core::marker::PhantomData;
+#[cfg(not(feature = "certified_subset"))]
+use core::ops::Range;
+#[cfg(not(feature = "certified_subset"))]
+use core::ptr::NonNull;
 use core::{
-    cmp::Ordering,
-    fmt, hash,
-    mem::{self, ManuallyDrop, MaybeUninit},
-    ops::{self, Range, RangeBounds},
-    ptr::{self, NonNull},
+    mem::{ManuallyDrop, MaybeUninit},
+    ops::{self},
+    ptr::{self},
     slice,
 };
+#[cfg(not(feature = "certified_subset"))]
+use core::mem;
+#[cfg(not(feature = "certified_subset"))]
+use core::cmp::Ordering;
+#[cfg(not(feature = "certified_subset"))]
+use core::ops::RangeBounds;
 
 use crate::len_type::{check_capacity_fits, LenType};
 use crate::CapacityError;
 
+#[cfg(not(feature = "certified_subset"))]
 mod drain;
 
 mod storage {
     use core::mem::MaybeUninit;
 
-    use crate::{
-        binary_heap::{BinaryHeapInner, BinaryHeapView},
-        deque::{DequeInner, DequeView},
-        len_type::LenType,
-    };
+    #[cfg(not(feature = "certified_subset"))]
+    use crate::binary_heap::{BinaryHeapInner, BinaryHeapView};
+    #[cfg(not(feature = "certified_subset"))]
+    use crate::deque::{DequeInner, DequeView};
+    use crate::len_type::LenType;
 
     use super::{VecInner, VecView};
 
@@ -67,18 +81,22 @@ mod storage {
         where
             Self: VecStorage<T>;
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view<K>(this: &BinaryHeapInner<T, K, Self>) -> &BinaryHeapView<T, K>
         where
             Self: VecStorage<T>;
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view_mut<K>(
             this: &mut BinaryHeapInner<T, K, Self>,
         ) -> &mut BinaryHeapView<T, K>
         where
             Self: VecStorage<T>;
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view(this: &DequeInner<T, Self>) -> &DequeView<T>
         where
             Self: VecStorage<T>;
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view_mut(this: &mut DequeInner<T, Self>) -> &mut DequeView<T>
         where
             Self: VecStorage<T>;
@@ -117,12 +135,14 @@ mod storage {
             this
         }
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view<K>(this: &BinaryHeapInner<T, K, Self>) -> &BinaryHeapView<T, K>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view_mut<K>(
             this: &mut BinaryHeapInner<T, K, Self>,
         ) -> &mut BinaryHeapView<T, K>
@@ -131,12 +151,14 @@ mod storage {
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view(this: &DequeInner<T, Self>) -> &DequeView<T>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view_mut(this: &mut DequeInner<T, Self>) -> &mut DequeView<T>
         where
             Self: VecStorage<T>,
@@ -169,12 +191,14 @@ mod storage {
             this
         }
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view<K>(this: &BinaryHeapInner<T, K, Self>) -> &BinaryHeapView<T, K>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_binary_heap_view_mut<K>(
             this: &mut BinaryHeapInner<T, K, Self>,
         ) -> &mut BinaryHeapView<T, K>
@@ -183,12 +207,14 @@ mod storage {
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view(this: &DequeInner<T, Self>) -> &DequeView<T>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_deque_view_mut(this: &mut DequeInner<T, Self>) -> &mut DequeView<T>
         where
             Self: VecStorage<T>,
@@ -202,6 +228,7 @@ pub use storage::{OwnedVecStorage, VecStorage, ViewVecStorage};
 
 pub(crate) use storage::VecStorageInner;
 
+#[cfg(not(feature = "certified_subset"))]
 pub use drain::Drain;
 
 /// Base struct for [`Vec`] and [`VecView`], generic over the [`VecStorage`].
@@ -335,6 +362,7 @@ impl<T, LenT: LenType, const N: usize> Vec<T, N, LenT> {
     ///
     /// If the length of the provided array is greater than the capacity of the
     /// vector a compile-time error will be produced.
+    #[cfg(not(feature = "certified_subset"))]
     pub fn from_array<const M: usize>(src: [T; M]) -> Self {
         const {
             assert!(N >= M);
@@ -459,6 +487,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// v.drain(..);
     /// assert_eq!(v, &[]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn drain<R>(&mut self, range: R) -> Drain<'_, T, LenT>
     where
         R: RangeBounds<usize>,
@@ -1287,6 +1316,7 @@ impl<T, LenT: LenType, const N: usize> Default for Vec<T, N, LenT> {
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> fmt::Debug for VecInner<T, LenT, S>
 where
     T: fmt::Debug,
@@ -1296,6 +1326,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: VecStorage<u8> + ?Sized> fmt::Write for VecInner<u8, LenT, S> {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         match self.extend_from_slice(s.as_bytes()) {
@@ -1305,6 +1336,7 @@ impl<LenT: LenType, S: VecStorage<u8> + ?Sized> fmt::Write for VecInner<u8, LenT
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, const N: usize, const M: usize> From<[T; M]> for Vec<T, N, LenT> {
     fn from(array: [T; M]) -> Self {
         Self::from_array(array)
@@ -1396,6 +1428,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> hash::Hash for VecInner<T, LenT, S>
 where
     T: core::hash::Hash,
@@ -1495,6 +1528,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, const N: usize> core::fmt::Debug for IntoIter<T, N, LenT>
 where
     T: core::fmt::Debug,
@@ -1671,6 +1705,7 @@ where
 // Implements Eq if underlying data is Eq
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Eq for VecInner<T, LenT, S> where T: Eq {}
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenTA: LenType, LenTB: LenType, SA: VecStorage<T> + ?Sized, SB: VecStorage<T> + ?Sized>
     PartialOrd<VecInner<T, LenTA, SA>> for VecInner<T, LenTB, SB>
 where
@@ -1681,6 +1716,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Ord for VecInner<T, LenT, S>
 where
     T: Ord,
@@ -1705,11 +1741,13 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> ops::DerefMut for VecInner<T, 
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> borrow::Borrow<[T]> for VecInner<T, LenT, S> {
     fn borrow(&self) -> &[T] {
         self.as_slice()
     }
 }
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> borrow::BorrowMut<[T]> for VecInner<T, LenT, S> {
     fn borrow_mut(&mut self) -> &mut [T] {
         self.as_mut_slice()
@@ -2147,6 +2185,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn from_array() {
         // Successful construction, N == M
         let v: Vec<u8, 3> = Vec::from_array([1, 2, 3]);

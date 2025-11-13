@@ -156,13 +156,20 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
+#[cfg(not(feature = "certified_subset"))]
 pub use binary_heap::BinaryHeap;
+#[cfg(not(feature = "certified_subset"))]
 pub use c_string::CString;
+#[cfg(not(feature = "certified_subset"))]
 pub use deque::Deque;
+#[cfg(not(feature = "certified_subset"))]
 pub use history_buf::{HistoryBuf, OldestOrdered};
+#[cfg(not(feature = "certified_subset"))]
 pub use index_map::IndexMap;
+#[cfg(not(feature = "certified_subset"))]
 pub use index_set::IndexSet;
 pub use len_type::LenType;
+#[cfg(not(feature = "certified_subset"))]
 pub use linear_map::LinearMap;
 pub use string::String;
 
@@ -172,14 +179,22 @@ pub use vec::{Vec, VecView};
 #[cfg(test)]
 mod test_helpers;
 
+#[cfg(not(feature = "certified_subset"))]
 pub mod c_string;
+#[cfg(not(feature = "certified_subset"))]
 pub mod deque;
+#[cfg(not(feature = "certified_subset"))]
 pub mod history_buf;
+#[cfg(not(feature = "certified_subset"))]
 pub mod index_map;
+#[cfg(not(feature = "certified_subset"))]
 pub mod index_set;
 mod len_type;
+#[cfg(not(feature = "certified_subset"))]
 pub mod linear_map;
+#[cfg(not(feature = "certified_subset"))]
 mod slice;
+#[cfg(not(feature = "certified_subset"))]
 pub mod storage;
 pub mod string;
 pub mod vec;
@@ -194,10 +209,13 @@ mod de;
 #[cfg(feature = "serde")]
 mod ser;
 
+#[cfg(not(feature = "certified_subset"))]
 pub mod binary_heap;
 #[cfg(feature = "bytes")]
+#[cfg(not(feature = "certified_subset"))]
 mod bytes;
 #[cfg(feature = "defmt")]
+#[cfg(not(feature = "certified_subset"))]
 mod defmt;
 #[cfg(any(
     // assume we have all atomics available if we're using portable-atomic
@@ -206,6 +224,7 @@ mod defmt;
     all(feature = "mpmc_large", target_has_atomic = "ptr"),
     all(not(feature = "mpmc_large"), target_has_atomic = "8")
 ))]
+#[cfg(not(feature = "certified_subset"))]
 pub mod mpmc;
 #[cfg(any(
     arm_llsc,
@@ -221,7 +240,9 @@ pub mod mpmc;
         )
     )
 ))]
+#[cfg(not(feature = "certified_subset"))]
 pub mod pool;
+#[cfg(not(feature = "certified_subset"))]
 pub mod sorted_linked_list;
 #[cfg(any(
     // assume we have all atomics available if we're using portable-atomic
@@ -232,27 +253,32 @@ pub mod sorted_linked_list;
     // or the current target is in a list in build.rs of targets known to have load/store but no CAS.
     has_atomic_load_store
 ))]
+#[cfg(not(feature = "certified_subset"))]
 pub mod spsc;
 
 #[cfg(feature = "ufmt")]
+#[cfg(not(feature = "certified_subset"))]
 mod ufmt;
 
 /// Implementation details for macros.
 /// Do not use. Used for macros only. Not covered by semver guarantees.
 #[doc(hidden)]
+#[cfg(not(feature = "certified_subset"))]
 pub mod _export {
     pub use crate::string::format;
 }
 
 /// The error type for fallible [`Vec`] and [`String`] methods.
-#[derive(Debug)]
+#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
 #[non_exhaustive]
 pub struct CapacityError;
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::fmt::Display for CapacityError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str("insufficient capacity")
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl core::error::Error for CapacityError {}
