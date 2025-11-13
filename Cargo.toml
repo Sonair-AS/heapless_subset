@@ -16,7 +16,8 @@ version = "0.9.1"
 
 [features]
 # default = ["dep:hash32", "dep:stable_deref_trait"]
-default = ["certified_subset"] 
+# default = ["certified_subset"] 
+default = [] 
 # Feature to enable debug formatting of types
 debugfmt = [] 
 bytes = ["dep:bytes"]
