@@ -17,7 +17,7 @@ use core::char::DecodeUtf16Error;
 #[cfg(not(feature = "certified_subset"))]
 use core::borrow;
 
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 use core::fmt;
 #[cfg(not(feature = "certified_subset"))]
 use core::fmt::{Arguments, Write};
@@ -894,7 +894,7 @@ impl<LenT: LenType, const N: usize> Clone for String<N, LenT> {
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> fmt::Debug for StringInner<LenT, S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         <str as fmt::Debug>::fmt(self, f)

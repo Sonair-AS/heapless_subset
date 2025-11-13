@@ -2,7 +2,7 @@
 
 #[cfg(not(feature = "certified_subset"))]
 use core::borrow;
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 use core::fmt;
 #[cfg(not(feature = "certified_subset"))]
 use core::hash;
@@ -1316,7 +1316,7 @@ impl<T, LenT: LenType, const N: usize> Default for Vec<T, N, LenT> {
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> fmt::Debug for VecInner<T, LenT, S>
 where
     T: fmt::Debug,

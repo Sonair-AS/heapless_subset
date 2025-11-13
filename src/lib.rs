@@ -269,7 +269,7 @@ pub mod _export {
 }
 
 /// The error type for fallible [`Vec`] and [`String`] methods.
-#[cfg_attr(not(feature = "certified_subset"), derive(Debug))]
+#[cfg_attr(any(feature = "debugfmt", not(feature = "certified_subset")), derive(Debug))]
 #[non_exhaustive]
 pub struct CapacityError;
 
