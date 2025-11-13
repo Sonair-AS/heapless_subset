@@ -164,13 +164,13 @@ pub use c_string::CString;
 pub use deque::Deque;
 #[cfg(not(feature = "certified_subset"))]
 pub use history_buf::{HistoryBuf, OldestOrdered};
-#[cfg(not(feature = "certified_subset"))]
-pub use index_map::IndexMap;
-#[cfg(not(feature = "certified_subset"))]
-pub use index_set::IndexSet;
+//#[cfg(not(feature = "certified_subset"))]
+//pub use index_map::IndexMap;
+//#[cfg(not(feature = "certified_subset"))]
+//pub use index_set::IndexSet;
 pub use len_type::LenType;
-#[cfg(not(feature = "certified_subset"))]
-pub use linear_map::LinearMap;
+//#[cfg(not(feature = "certified_subset"))]
+//pub use linear_map::LinearMap;
 pub use string::String;
 
 pub use vec::{Vec, VecView};
@@ -185,13 +185,13 @@ pub mod c_string;
 pub mod deque;
 #[cfg(not(feature = "certified_subset"))]
 pub mod history_buf;
-#[cfg(not(feature = "certified_subset"))]
-pub mod index_map;
-#[cfg(not(feature = "certified_subset"))]
-pub mod index_set;
+//#[cfg(not(feature = "certified_subset"))]
+//pub mod index_map;
+//#[cfg(not(feature = "certified_subset"))]
+//pub mod index_set;
 mod len_type;
-#[cfg(not(feature = "certified_subset"))]
-pub mod linear_map;
+//#[cfg(not(feature = "certified_subset"))]
+//pub mod linear_map;
 #[cfg(not(feature = "certified_subset"))]
 mod slice;
 #[cfg(not(feature = "certified_subset"))]

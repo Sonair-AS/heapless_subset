@@ -39,6 +39,7 @@ pub use drain::Drain;
 ///
 /// [`from_utf16`]: String::from_utf16
 #[cfg(not(feature = "certified_subset"))]
+#[derive(Debug)]
 pub enum FromUtf16Error {
     /// The capacity of the `String` is too small for the given operation.
     Capacity(CapacityError),
