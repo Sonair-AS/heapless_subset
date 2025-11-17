@@ -240,8 +240,8 @@ pub mod mpmc;
         )
     )
 ))]
-#[cfg(not(feature = "certified_subset"))]
-pub mod pool;
+//#[cfg(not(feature = "certified_subset"))]
+//pub mod pool;
 #[cfg(not(feature = "certified_subset"))]
 pub mod sorted_linked_list;
 #[cfg(any(

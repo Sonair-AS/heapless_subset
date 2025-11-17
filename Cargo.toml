@@ -62,9 +62,9 @@ ufmt = { version = "0.2", optional = true }
 ufmt-write = { version = "0.1", optional = true }
 defmt = { version = "1.0.1", optional = true }
 
-# for the pool module
-[target.'cfg(any(target_arch = "arm", target_pointer_width = "32", target_pointer_width = "64"))'.dependencies]
-stable_deref_trait = { version = "1", default-features = false, optional = true}
+# # for the pool module
+# [target.'cfg(any(target_arch = "arm", target_pointer_width = "32", target_pointer_width = "64"))'.dependencies]
+# stable_deref_trait = { version = "1", default-features = false, optional = true}
 
 [dev-dependencies]
 critical-section = { version = "1.1", features = ["std"] }
