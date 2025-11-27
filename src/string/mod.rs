@@ -843,7 +843,6 @@ impl<'a, LenT: LenType, const N: usize> TryFrom<&'a str> for String<N, LenT> {
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, const N: usize> str::FromStr for String<N, LenT> {
     type Err = CapacityError;
 
