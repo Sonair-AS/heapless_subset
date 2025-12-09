@@ -843,7 +843,6 @@ impl<'a, LenT: LenType, const N: usize> TryFrom<&'a str> for String<N, LenT> {
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, const N: usize> str::FromStr for String<N, LenT> {
     type Err = CapacityError;
 
@@ -969,47 +968,42 @@ impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<[u8]> for StringInner<LenT,
     }
 }
 
-#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStorage + ?Sized>
     PartialEq<StringInner<LenT1, S1>> for StringInner<LenT2, S2>
 {
     fn eq(&self, rhs: &StringInner<LenT1, S1>) -> bool {
-        str::eq(&**self, &**rhs)
+        self.as_bytes() == rhs.as_bytes()
     }
 }
 
-#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
-        str::eq(self, other)
+        self.as_bytes() == other.as_bytes()
     }
 }
 
 // String<N> == &'str
-#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
-        str::eq(self, &other[..])
+        self.as_bytes() == other.as_bytes()
     }
 }
 
 // str == String<N>
-#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
-        Self::eq(self, &other[..])
+        self.as_bytes() == other.as_bytes()
     }
 }
 
 // &'str == String<N>
-#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for &str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
-        str::eq(self, &other[..])
+        self.as_bytes() == other.as_bytes()
     }
 }
 
