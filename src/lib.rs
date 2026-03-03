@@ -44,84 +44,96 @@
 //!
 //! List of currently implemented data structures:
 #![cfg_attr(
-    any(
-        arm_llsc,
-        all(
-            target_pointer_width = "32",
-            any(target_has_atomic = "64", feature = "portable-atomic")
-        ),
-        all(
-            target_pointer_width = "64",
-            any(
-                all(target_has_atomic = "128", feature = "nightly"),
-                feature = "portable-atomic"
+    all(
+        not(feature = "certified_subset"),
+        any(
+            arm_llsc,
+            all(
+                target_pointer_width = "32",
+                any(target_has_atomic = "64", feature = "portable-atomic")
+            ),
+            all(
+                target_pointer_width = "64",
+                any(
+                    all(target_has_atomic = "128", feature = "nightly"),
+                    feature = "portable-atomic"
+                )
             )
         )
     ),
     doc = "- [`Arc`][pool::arc::Arc]: Like `std::sync::Arc` but backed by a lock-free memory pool rather than `[global_allocator]`."
 )]
 #![cfg_attr(
-    any(
-        arm_llsc,
-        all(
-            target_pointer_width = "32",
-            any(target_has_atomic = "64", feature = "portable-atomic")
-        ),
-        all(
-            target_pointer_width = "64",
-            any(
-                all(target_has_atomic = "128", feature = "nightly"),
-                feature = "portable-atomic"
+    all(
+        not(feature = "certified_subset"),
+        any(
+            arm_llsc,
+            all(
+                target_pointer_width = "32",
+                any(target_has_atomic = "64", feature = "portable-atomic")
+            ),
+            all(
+                target_pointer_width = "64",
+                any(
+                    all(target_has_atomic = "128", feature = "nightly"),
+                    feature = "portable-atomic"
+                )
             )
         )
     ),
     doc = "- [`Box`][pool::boxed::Box]: Like `std::boxed::Box` but backed by a lock-free memory pool rather than `[global_allocator]`."
 )]
 #![cfg_attr(
-    any(
-        arm_llsc,
-        all(
-            target_pointer_width = "32",
-            any(target_has_atomic = "64", feature = "portable-atomic")
-        ),
-        all(
-            target_pointer_width = "64",
-            any(
-                all(target_has_atomic = "128", feature = "nightly"),
-                feature = "portable-atomic"
+    all(
+        not(feature = "certified_subset"),
+        any(
+            arm_llsc,
+            all(
+                target_pointer_width = "32",
+                any(target_has_atomic = "64", feature = "portable-atomic")
+            ),
+            all(
+                target_pointer_width = "64",
+                any(
+                    all(target_has_atomic = "128", feature = "nightly"),
+                    feature = "portable-atomic"
+                )
             )
         )
     ),
     doc = "- [`Arc`][pool::arc::Arc]: Like `std::sync::Arc` but backed by a lock-free memory pool rather than `[global_allocator]`."
 )]
 #![cfg_attr(
-    any(
-        arm_llsc,
-        all(
-            target_pointer_width = "32",
-            any(target_has_atomic = "64", feature = "portable-atomic")
-        ),
-        all(
-            target_pointer_width = "64",
-            any(
-                all(target_has_atomic = "128", feature = "nightly"),
-                feature = "portable-atomic"
+    all(
+        not(feature = "certified_subset"),
+        any(
+            arm_llsc,
+            all(
+                target_pointer_width = "32",
+                any(target_has_atomic = "64", feature = "portable-atomic")
+            ),
+            all(
+                target_pointer_width = "64",
+                any(
+                    all(target_has_atomic = "128", feature = "nightly"),
+                    feature = "portable-atomic"
+                )
             )
         )
     ),
     doc = "- [`Object`](pool::object::Object): Objects managed by an object pool."
 )]
-//! - [`BinaryHeap`]: A priority queue.
-//! - [`Deque`]: A double-ended queue.
-//! - [`HistoryBuf`]: A “history buffer”, similar to a write-only ring buffer.
-//! - [`IndexMap`]: A hash table.
-//! - [`IndexSet`]: A hash set.
-//! - [`LinearMap`]: A linear map.
-//! - [`SortedLinkedList`](sorted_linked_list::SortedLinkedList): A sorted linked list.
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`BinaryHeap`]: A priority queue.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`Deque`]: A double-ended queue.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`HistoryBuf`]: A \"history buffer\", similar to a write-only ring buffer.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`IndexMap`]: A hash table.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`IndexSet`]: A hash set.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`LinearMap`]: A linear map.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`SortedLinkedList`](sorted_linked_list::SortedLinkedList): A sorted linked list.")]
 //! - [`String`]: A string.
 //! - [`Vec`]: A vector.
-//! - [`mpmc::MpMcQueue`](mpmc): A lock-free multiple-producer, multiple-consumer queue.
-//! - [`spsc::Queue`](spsc): A lock-free single-producer, single-consumer queue.
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`mpmc::MpMcQueue`](mpmc): A lock-free multiple-producer, multiple-consumer queue.")]
+#![cfg_attr(not(feature = "certified_subset"), doc = "- [`spsc::Queue`](spsc): A lock-free single-producer, single-consumer queue.")]
 //!
 //! # Minimum Supported Rust Version (MSRV)
 //!

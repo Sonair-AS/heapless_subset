@@ -1074,12 +1074,14 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     ///
     /// Note: Because this shifts over the remaining elements, it has a
     /// worst-case performance of *O*(n). If you don't need the order of
-    /// elements to be preserved, use [`swap_remove`] instead. If you'd like to
-    /// remove elements from the beginning of the `Vec`, consider using
-    /// [`Deque::pop_front`] instead.
+    /// elements to be preserved, use [`swap_remove`] instead.
+    #[cfg_attr(
+        not(feature = "certified_subset"),
+        doc = " If you'd like to remove elements from the beginning of the `Vec`, consider using [`Deque::pop_front`] instead."
+    )]
     ///
     /// [`swap_remove`]: Vec::swap_remove
-    /// [`Deque::pop_front`]: crate::Deque::pop_front
+    #[cfg_attr(not(feature = "certified_subset"), doc = "\n/// [`Deque::pop_front`]: crate::Deque::pop_front")]
     ///
     /// # Panics
     ///
