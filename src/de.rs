@@ -1,11 +1,9 @@
 use crate::{len_type::LenType, String, Vec};
-use core::{
-    fmt,
-    hash::{Hash, Hasher},
-    marker::PhantomData,
-};
+use core::{fmt, marker::PhantomData};
+//use core::hash::{Hash, Hasher};
 //use hash32::BuildHasherDefault;
-use serde::de::{self, Deserialize, Deserializer, Error, MapAccess, SeqAccess};
+use serde::de::{self, Deserialize, Deserializer, Error, SeqAccess};
+//use serde::de::MapAccess;
 
 // Sequential containers
 
