@@ -12,11 +12,13 @@ use core::ops::Range;
 #[cfg(not(feature = "certified_subset"))]
 use core::ptr::NonNull;
 use core::{
-    mem::{ManuallyDrop, MaybeUninit},
+    mem::MaybeUninit,
     ops::{self},
     ptr::{self},
     slice,
 };
+#[cfg(not(feature = "certified_subset"))]
+use core::mem::ManuallyDrop;
 #[cfg(not(feature = "certified_subset"))]
 use core::mem;
 #[cfg(not(feature = "certified_subset"))]
@@ -440,6 +442,7 @@ impl<T, LenT: LenType, const N: usize> Vec<T, N, LenT> {
     /// This can be useful if you need to pass a `Vec<T, N, u8>` into a `Vec<T, N, usize>` for example.
     ///
     /// This will check at compile time if the `N` value will fit into `NewLenT`, and error if not.
+    #[cfg(not(feature = "certified_subset"))]
     pub fn cast_len_type<NewLenT: LenType>(self) -> Vec<T, N, NewLenT> {
         const { check_capacity_fits::<NewLenT, N>() }
         let this = ManuallyDrop::new(self);
@@ -535,6 +538,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// let vec: Vec<u8, 10> = Vec::from_slice(&[1, 2, 3, 4]).unwrap();
     /// let view: &VecView<u8, _> = &vec;
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     #[inline]
     pub fn as_view(&self) -> &VecView<T, LenT> {
         S::as_vec_view(self)
@@ -555,6 +559,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// let mut vec: Vec<u8, 10, u8> = Vec::from_slice(&[1, 2, 3, 4]).unwrap();
     /// let view: &mut VecView<u8, _> = &mut vec;
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     #[inline]
     pub fn as_mut_view(&mut self) -> &mut VecView<T, LenT> {
         S::as_vec_view_mut(self)
@@ -795,6 +800,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// If `new_len` is less than `len`, the `Vec` is simply truncated.
     ///
     /// See also [`resize`](Self::resize).
+    #[cfg(not(feature = "certified_subset"))]
     pub fn resize_default(&mut self, new_len: usize) -> Result<(), CapacityError>
     where
         T: Clone + Default,
@@ -924,6 +930,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(v.swap_remove(0), "foo");
     /// assert_eq!(&*v, ["baz", "qux"]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn swap_remove(&mut self, index: usize) -> T {
         assert!(index < self.len());
         unsafe { self.swap_remove_unchecked(index) }
@@ -956,6 +963,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(unsafe { v.swap_remove_unchecked(0) }, "foo");
     /// assert_eq!(&*v, ["baz", "qux"]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub unsafe fn swap_remove_unchecked(&mut self, index: usize) -> T {
         let length = self.len();
         debug_assert!(index < length);
@@ -972,6 +980,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     }
 
     /// Returns true if the vec is empty
+    #[cfg(not(feature = "certified_subset"))]
     pub fn is_empty(&self) -> bool {
         self.len == LenT::ZERO
     }
@@ -990,6 +999,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(v.starts_with(b"ab"), true);
     /// assert_eq!(v.starts_with(b"bc"), false);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn starts_with(&self, needle: &[T]) -> bool
     where
         T: PartialEq,
@@ -1012,6 +1022,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(v.ends_with(b"ab"), false);
     /// assert_eq!(v.ends_with(b"bc"), true);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn ends_with(&self, needle: &[T]) -> bool
     where
         T: PartialEq,
@@ -1147,6 +1158,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// vec.retain(|_| *iter.next().unwrap());
     /// assert_eq!(vec, [2, 3, 5]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> bool,
@@ -1176,6 +1188,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// });
     /// assert_eq!(vec, [2, 3, 4]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     pub fn retain_mut<F>(&mut self, mut f: F)
     where
         F: FnMut(&mut T) -> bool,
@@ -1304,6 +1317,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     ///
     /// assert_eq!(&v, &[0, 1, 2]);
     /// ```
+    #[cfg(not(feature = "certified_subset"))]
     #[inline]
     pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<T>] {
         &mut self.buffer.borrow_mut()[self.len.into_usize()..]
@@ -1354,7 +1368,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Drop for VecInner<T, LenT, S> 
     }
 }
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "certified_subset")))]
 /// Converts the given `alloc::vec::Vec<T>` into a `Vec<T, N>`.
 impl<T, LenT: LenType, const N: usize> TryFrom<alloc::vec::Vec<T>> for Vec<T, N, LenT> {
     type Error = CapacityError;
@@ -1376,7 +1390,7 @@ impl<T, LenT: LenType, const N: usize> TryFrom<alloc::vec::Vec<T>> for Vec<T, N,
     }
 }
 
-#[cfg(feature = "alloc")]
+#[cfg(all(feature = "alloc", not(feature = "certified_subset")))]
 /// Converts the given `Vec<T, N>` into an `alloc::vec::Vec<T>`.
 impl<T, LenT: LenType, const N: usize> TryFrom<Vec<T, N, LenT>> for alloc::vec::Vec<T> {
     type Error = alloc::collections::TryReserveError;
@@ -1401,6 +1415,7 @@ impl<T, LenT: LenType, const N: usize> TryFrom<Vec<T, N, LenT>> for alloc::vec::
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<'a, T: Clone, LenT: LenType, const N: usize> TryFrom<&'a [T]> for Vec<T, N, LenT> {
     type Error = CapacityError;
 
@@ -1409,6 +1424,7 @@ impl<'a, T: Clone, LenT: LenType, const N: usize> TryFrom<&'a [T]> for Vec<T, N,
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Extend<T> for VecInner<T, LenT, S> {
     fn extend<I>(&mut self, iter: I)
     where
@@ -1418,6 +1434,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Extend<T> for VecInner<T, LenT
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<'a, T, LenT: LenType, S: VecStorage<T> + ?Sized> Extend<&'a T> for VecInner<T, LenT, S>
 where
     T: 'a + Copy,
@@ -1449,6 +1466,7 @@ impl<'a, T, LenT: LenType, S: VecStorage<T> + ?Sized> IntoIterator for &'a VecIn
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<'a, T, LenT: LenType, S: VecStorage<T> + ?Sized> IntoIterator
     for &'a mut VecInner<T, LenT, S>
 {
@@ -1530,7 +1548,7 @@ where
     }
 }
 
-#[cfg(not(feature = "certified_subset"))]
+#[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 impl<T, LenT: LenType, const N: usize> core::fmt::Debug for IntoIter<T, N, LenT>
 where
     T: core::fmt::Debug,
@@ -1592,6 +1610,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTB, const M: usize, SB> PartialEq<VecInner<B, LenTB, SB>> for [A; M]
 where
     A: PartialEq<B>,
@@ -1603,6 +1622,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTB, SB, const M: usize> PartialEq<VecInner<B, LenTB, SB>> for &[A; M]
 where
     A: PartialEq<B>,
@@ -1614,6 +1634,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTB, SB> PartialEq<VecInner<B, LenTB, SB>> for [A]
 where
     A: PartialEq<B>,
@@ -1625,6 +1646,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTB, SB> PartialEq<VecInner<B, LenTB, SB>> for &[A]
 where
     A: PartialEq<B>,
@@ -1636,6 +1658,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTB: LenType, SB: VecStorage<B>> PartialEq<VecInner<B, LenTB, SB>> for &mut [A]
 where
     A: PartialEq<B>,
@@ -1645,6 +1668,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTA: LenType, SA, const N: usize> PartialEq<[B; N]> for VecInner<A, LenTA, SA>
 where
     A: PartialEq<B>,
@@ -1656,6 +1680,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTA, SA, const N: usize> PartialEq<&[B; N]> for VecInner<A, LenTA, SA>
 where
     A: PartialEq<B>,
@@ -1668,6 +1693,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTA, SA> PartialEq<[B]> for VecInner<A, LenTA, SA>
 where
     A: PartialEq<B>,
@@ -1680,6 +1706,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTA, SA> PartialEq<&[B]> for VecInner<A, LenTA, SA>
 where
     A: PartialEq<B>,
@@ -1692,6 +1719,7 @@ where
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<A, B, LenTA, SA> PartialEq<&mut [B]> for VecInner<A, LenTA, SA>
 where
     A: PartialEq<B>,
@@ -1705,6 +1733,7 @@ where
 }
 
 // Implements Eq if underlying data is Eq
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> Eq for VecInner<T, LenT, S> where T: Eq {}
 
 #[cfg(not(feature = "certified_subset"))]
@@ -1756,6 +1785,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> borrow::BorrowMut<[T]> for Vec
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsRef<Self> for VecInner<T, LenT, S> {
     #[inline]
     fn as_ref(&self) -> &Self {
@@ -1763,6 +1793,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsRef<Self> for VecInner<T, Le
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsMut<Self> for VecInner<T, LenT, S> {
     #[inline]
     fn as_mut(&mut self) -> &mut Self {
@@ -1770,6 +1801,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsMut<Self> for VecInner<T, Le
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsRef<[T]> for VecInner<T, LenT, S> {
     #[inline]
     fn as_ref(&self) -> &[T] {
@@ -1777,6 +1809,7 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsRef<[T]> for VecInner<T, Len
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> AsMut<[T]> for VecInner<T, LenT, S> {
     #[inline]
     fn as_mut(&mut self) -> &mut [T] {
