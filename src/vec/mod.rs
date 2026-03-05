@@ -60,7 +60,11 @@ mod storage {
     /// - [`VecView<T>`](crate::vec::VecView) = `VecInner<T, ViewStorage<T>>`
     ///
     /// `Vec` can be unsized into `VecView`, either by unsizing coercions such as `&mut Vec -> &mut VecView` or
-    /// `Box<Vec> -> Box<VecView>`, or explicitly with [`.as_view()`](crate::vec::Vec::as_view) or [`.as_mut_view()`](crate::vec::Vec::as_mut_view).
+    #[cfg_attr(
+        not(feature = "certified_subset"),
+        doc = "`Box<Vec> -> Box<VecView>`, or explicitly with [`.as_view()`](crate::vec::Vec::as_view) or [`.as_mut_view()`](crate::vec::Vec::as_mut_view)."
+    )]
+    #[cfg_attr(feature = "certified_subset", doc = "`Box<Vec> -> Box<VecView>`.")]
     ///
     /// This trait is sealed, so you cannot implement it for your own types. You can only use
     /// the implementations provided by this crate.
@@ -780,8 +784,8 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// If `new_len` is greater than len, the Vec is extended by the
     /// difference, with each additional slot filled with value. If
     /// `new_len` is less than len, the Vec is simply truncated.
+    #[cfg_attr(not(feature = "certified_subset"), doc = "See also [`resize_default`](Self::resize_default).")]
     ///
-    /// See also [`resize_default`](Self::resize_default).
     pub fn resize(&mut self, new_len: usize, value: T) -> Result<(), CapacityError>
     where
         T: Clone,
@@ -1089,15 +1093,11 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// shifting all elements after it to the left.
     ///
     /// Note: Because this shifts over the remaining elements, it has a
-    /// worst-case performance of *O*(n). If you don't need the order of
-    /// elements to be preserved, use [`swap_remove`] instead.
+    /// worst-case performance of *O*(n).
     #[cfg_attr(
         not(feature = "certified_subset"),
-        doc = " If you'd like to remove elements from the beginning of the `Vec`, consider using [`Deque::pop_front`] instead."
+        doc = " If you don't need the order of elements to be preserved, use [`swap_remove`] instead. If you'd like to remove elements from the beginning of the `Vec`, consider using [`Deque::pop_front`] instead.\n\n[`swap_remove`]: Vec::swap_remove\n[`Deque::pop_front`]: crate::Deque::pop_front"
     )]
-    ///
-    /// [`swap_remove`]: Vec::swap_remove
-    #[cfg_attr(not(feature = "certified_subset"), doc = "\n/// [`Deque::pop_front`]: crate::Deque::pop_front")]
     ///
     /// # Panics
     ///
