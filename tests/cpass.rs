@@ -1,3 +1,4 @@
+#![cfg(not(feature = "certified_subset"))]
 //! Collections of `Send`-able things are `Send`
 
 use heapless::{

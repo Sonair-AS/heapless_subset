@@ -9,6 +9,8 @@ use std::{
 fn main() -> Result<(), Box<dyn Error>> {
     println!("cargo::rustc-check-cfg=cfg(arm_llsc)");
     println!("cargo::rustc-check-cfg=cfg(has_atomic_load_store)");
+    // `coverage_nightly` is set automatically by `cargo llvm-cov`.
+    println!("cargo::rustc-check-cfg=cfg(coverage_nightly)");
 
     let target = env::var("TARGET")?;
 

@@ -39,8 +39,10 @@ mod storage {
     use crate::binary_heap::{BinaryHeapInner, BinaryHeapView};
     #[cfg(not(feature = "certified_subset"))]
     use crate::deque::{DequeInner, DequeView};
+    #[cfg(not(feature = "certified_subset"))]
     use crate::len_type::LenType;
 
+    #[cfg(not(feature = "certified_subset"))]
     use super::{VecInner, VecView};
 
     /// Trait defining how data for a container is stored.
@@ -74,9 +76,11 @@ mod storage {
         fn borrow(&self) -> &[MaybeUninit<T>];
         fn borrow_mut(&mut self) -> &mut [MaybeUninit<T>];
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view<LenT: LenType>(this: &VecInner<T, LenT, Self>) -> &VecView<T, LenT>
         where
             Self: VecStorage<T>;
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view_mut<LenT: LenType>(
             this: &mut VecInner<T, LenT, Self>,
         ) -> &mut VecView<T, LenT>
@@ -122,12 +126,14 @@ mod storage {
             &mut self.buffer
         }
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view<LenT: LenType>(this: &VecInner<T, LenT, Self>) -> &VecView<T, LenT>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view_mut<LenT: LenType>(
             this: &mut VecInner<T, LenT, Self>,
         ) -> &mut VecView<T, LenT>
@@ -178,12 +184,14 @@ mod storage {
             &mut self.buffer
         }
 
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view<LenT: LenType>(this: &VecInner<T, LenT, Self>) -> &VecView<T, LenT>
         where
             Self: VecStorage<T>,
         {
             this
         }
+        #[cfg(not(feature = "certified_subset"))]
         fn as_vec_view_mut<LenT: LenType>(
             this: &mut VecInner<T, LenT, Self>,
         ) -> &mut VecView<T, LenT>
@@ -980,7 +988,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     }
 
     /// Returns true if the vec is empty
-    #[cfg(not(feature = "certified_subset"))]
     pub fn is_empty(&self) -> bool {
         self.len == LenT::ZERO
     }
@@ -999,7 +1006,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(v.starts_with(b"ab"), true);
     /// assert_eq!(v.starts_with(b"bc"), false);
     /// ```
-    #[cfg(not(feature = "certified_subset"))]
     pub fn starts_with(&self, needle: &[T]) -> bool
     where
         T: PartialEq,
@@ -1022,7 +1028,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// assert_eq!(v.ends_with(b"ab"), false);
     /// assert_eq!(v.ends_with(b"bc"), true);
     /// ```
-    #[cfg(not(feature = "certified_subset"))]
     pub fn ends_with(&self, needle: &[T]) -> bool
     where
         T: PartialEq,
@@ -1828,14 +1833,23 @@ where
 
 #[cfg(test)]
 mod tests {
+    #[cfg(not(feature = "certified_subset"))]
     use core::fmt::Write;
-
-    use static_assertions::assert_not_impl_any;
 
     use super::{Vec, VecView};
 
     // Ensure a `Vec` containing `!Send` values stays `!Send` itself.
-    assert_not_impl_any!(Vec<*const (), 4>: Send);
+    //
+    // Justification for coverage(off): `assert_not_impl_any!` expands to function
+    // bodies (Vec::new, from_slice) for Vec<*const (), 4> that exist only for
+    // compile-time trait checking and are never called at runtime. Including them
+    // in instrumented builds creates uncoverable phantom instantiations.
+    #[cfg_attr(coverage_nightly, coverage(off))]
+    mod _static_assertions {
+        use super::*;
+        use static_assertions::assert_not_impl_any;
+        assert_not_impl_any!(Vec<*const (), 4>: Send);
+    }
 
     #[test]
     fn static_new() {
@@ -1897,6 +1911,15 @@ mod tests {
     fn drop_vecview() {
         droppable!();
 
+        // Exercise owned Vec<Droppable, 2> Drop (covers as_mut_slice, borrow_mut
+        // instantiations for the owned storage type that would otherwise only be
+        // compiled but never called when interacting solely through VecView).
+        {
+            let mut v: Vec<Droppable, 2> = Vec::new();
+            v.push(Droppable::new()).ok().unwrap();
+        }
+        assert_eq!(Droppable::count(), 0);
+
         {
             let v: Vec<Droppable, 2> = Vec::new();
             let v: Box<Vec<Droppable, 2>> = Box::new(v);
@@ -1923,6 +1946,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn eq() {
         let mut xs: Vec<i32, 4> = Vec::new();
         let mut ys: Vec<i32, 8> = Vec::new();
@@ -1936,6 +1960,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn cmp() {
         let mut xs: Vec<i32, 4> = Vec::new();
         let mut ys: Vec<i32, 4> = Vec::new();
@@ -1949,6 +1974,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn cmp_heterogenous_size() {
         let mut xs: Vec<i32, 4> = Vec::new();
         let mut ys: Vec<i32, 8> = Vec::new();
@@ -1962,6 +1988,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn cmp_with_arrays_and_slices() {
         let mut xs: Vec<i32, 12> = Vec::new();
         xs.push(1).unwrap();
@@ -2032,6 +2059,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn collect_from_iter() {
         let slice = &[1, 2, 3];
         let vec: Vec<i32, 4> = slice.iter().cloned().collect();
@@ -2121,9 +2149,9 @@ mod tests {
     fn resize_size_limit() {
         let mut v: Vec<u8, 4> = Vec::new();
 
-        v.resize(0, 0).unwrap();
-        v.resize(4, 0).unwrap();
-        v.resize(5, 0).expect_err("full");
+        assert!(v.resize(0, 0).is_ok());
+        assert!(v.resize(4, 0).is_ok());
+        assert!(v.resize(5, 0).is_err());
     }
 
     #[test]
@@ -2133,23 +2161,23 @@ mod tests {
         assert_eq!(v.len(), 0);
 
         // Grow by 1
-        v.resize(1, 0).unwrap();
+        assert!(v.resize(1, 0).is_ok());
         assert_eq!(v.len(), 1);
 
         // Grow by 2
-        v.resize(3, 0).unwrap();
+        assert!(v.resize(3, 0).is_ok());
         assert_eq!(v.len(), 3);
 
         // Resize to current size
-        v.resize(3, 0).unwrap();
+        assert!(v.resize(3, 0).is_ok());
         assert_eq!(v.len(), 3);
 
         // Shrink by 1
-        v.resize(2, 0).unwrap();
+        assert!(v.resize(2, 0).is_ok());
         assert_eq!(v.len(), 2);
 
         // Shrink by 2
-        v.resize(0, 0).unwrap();
+        assert!(v.resize(0, 0).is_ok());
         assert_eq!(v.len(), 0);
     }
 
@@ -2158,25 +2186,26 @@ mod tests {
         let mut v: Vec<u8, 4> = Vec::new();
 
         // New entries take supplied value when growing
-        v.resize(1, 17).unwrap();
+        assert!(v.resize(1, 17).is_ok());
         assert_eq!(v[0], 17);
 
         // Old values aren't changed when growing
-        v.resize(2, 18).unwrap();
+        assert!(v.resize(2, 18).is_ok());
         assert_eq!(v[0], 17);
         assert_eq!(v[1], 18);
 
         // Old values aren't changed when length unchanged
-        v.resize(2, 0).unwrap();
+        assert!(v.resize(2, 0).is_ok());
         assert_eq!(v[0], 17);
         assert_eq!(v[1], 18);
 
         // Old values aren't changed when shrinking
-        v.resize(1, 0).unwrap();
+        assert!(v.resize(1, 0).is_ok());
         assert_eq!(v[0], 17);
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn resize_default() {
         let mut v: Vec<u8, 4> = Vec::new();
 
@@ -2187,6 +2216,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn write() {
         let mut v: Vec<u8, 4> = Vec::new();
         write!(v, "{:x}", 1234).unwrap();
@@ -2197,10 +2227,10 @@ mod tests {
     fn extend_from_slice() {
         let mut v: Vec<u8, 4> = Vec::new();
         assert_eq!(v.len(), 0);
-        v.extend_from_slice(&[1, 2]).unwrap();
+        assert!(v.extend_from_slice(&[1, 2]).is_ok());
         assert_eq!(v.len(), 2);
         assert_eq!(v.as_slice(), &[1, 2]);
-        v.extend_from_slice(&[3]).unwrap();
+        assert!(v.extend_from_slice(&[3]).is_ok());
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
         assert!(v.extend_from_slice(&[4, 5]).is_err());
@@ -2211,9 +2241,12 @@ mod tests {
     #[test]
     fn from_slice() {
         // Successful construction
-        let v: Vec<u8, 4> = Vec::from_slice(&[1, 2, 3]).unwrap();
+        let v = Vec::<u8, 4>::from_slice(&[1, 2, 3]).ok().unwrap();
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
+
+        // Successful with exact capacity
+        assert!(Vec::<u8, 2>::from_slice(&[1, 2]).is_ok());
 
         // Slice too large
         assert!(Vec::<u8, 2>::from_slice(&[1, 2, 3]).is_err());
@@ -2236,6 +2269,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn from_array_no_drop() {
         struct Drops(Option<u8>);
 
@@ -2254,7 +2288,7 @@ mod tests {
 
     #[test]
     fn starts_with() {
-        let v: Vec<_, 8> = Vec::from_slice(b"ab").unwrap();
+        let v = Vec::<_, 8>::from_slice(b"ab").ok().unwrap();
         assert!(v.starts_with(&[]));
         assert!(v.starts_with(b""));
         assert!(v.starts_with(b"a"));
@@ -2266,7 +2300,7 @@ mod tests {
 
     #[test]
     fn ends_with() {
-        let v: Vec<_, 8> = Vec::from_slice(b"ab").unwrap();
+        let v = Vec::<_, 8>::from_slice(b"ab").ok().unwrap();
         assert!(v.ends_with(&[]));
         assert!(v.ends_with(b""));
         assert!(v.ends_with(b"b"));
@@ -2277,6 +2311,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "certified_subset"))]
     fn spare_capacity_mut() {
         let mut v: Vec<_, 4> = Vec::new();
         let uninit = v.spare_capacity_mut();
@@ -2321,10 +2356,221 @@ mod tests {
             <alloc::vec::Vec<u8> as TryInto<Vec<u8, 1>>>::try_into(av.clone()).unwrap_err();
     }
 
+    // Justification for coverage(off): compile-time variance checks, never called at runtime.
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn _test_variance<'a: 'b, 'b>(x: Vec<&'a (), 42>) -> Vec<&'b (), 42> {
         x
     }
+    #[cfg_attr(coverage_nightly, coverage(off))]
     fn _test_variance_view<'a: 'b, 'b, 'c>(x: &'c VecView<&'a ()>) -> &'c VecView<&'b ()> {
         x
+    }
+
+    #[test]
+    fn into_array_success() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        assert!(v.push(3).is_ok());
+        let arr = v.into_array::<3>().ok().unwrap();
+        assert_eq!(arr, [1, 2, 3]);
+    }
+
+    #[test]
+    fn into_array_fail() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        // Length is 2, asking for array of 3
+        let result = v.into_array::<3>();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn vec_clone() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        let v2 = v.clone();
+        assert_eq!(v.as_slice(), v2.as_slice());
+    }
+
+    #[test]
+    fn as_ptr_and_capacity() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        let ptr = v.as_ptr();
+        assert!(!ptr.is_null());
+        let _mptr = v.as_mut_ptr();
+        assert_eq!(v.capacity(), 4);
+    }
+
+    #[test]
+    fn clear_vec() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        assert_eq!(v.len(), 2);
+        v.clear();
+        assert_eq!(v.len(), 0);
+    }
+
+    #[test]
+    fn extend_inherent() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        v.extend([1u8, 2, 3].iter().cloned());
+        assert_eq!(v.as_slice(), &[1, 2, 3]);
+    }
+
+    #[test]
+    fn truncate_noop() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        // Truncate with len > current length is a no-op
+        v.truncate(10);
+        assert_eq!(v.len(), 2);
+    }
+
+    #[test]
+    fn set_len_and_insert_remove() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+
+        // insert at beginning
+        assert!(v.insert(0, 0).is_ok());
+        assert_eq!(v.as_slice(), &[0, 1]);
+
+        // insert in middle
+        assert!(v.insert(1, 10).is_ok());
+        assert_eq!(v.as_slice(), &[0, 10, 1]);
+
+        // remove from middle
+        assert_eq!(v.remove(1), 10);
+        assert_eq!(v.as_slice(), &[0, 1]);
+
+        // remove from beginning
+        assert_eq!(v.remove(0), 0);
+        assert_eq!(v.as_slice(), &[1]);
+    }
+
+    #[test]
+    fn insert_full() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        assert!(v.push(3).is_ok());
+        assert!(v.push(4).is_ok());
+        // Vec is full, insert should fail
+        assert!(v.insert(0, 0).is_err());
+    }
+
+    #[test]
+    fn default_vec() {
+        let v: Vec<u8, 4> = Default::default();
+        assert_eq!(v.len(), 0);
+        assert_eq!(v.capacity(), 4);
+    }
+
+    #[test]
+    fn into_iter_ref() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        let mut sum = 0u8;
+        for &x in &v {
+            sum += x;
+        }
+        assert_eq!(sum, 3);
+    }
+
+    #[test]
+    fn into_iter_clone() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        assert!(v.push(3).is_ok());
+
+        let mut iter = v.into_iter();
+        assert_eq!(iter.next(), Some(1));
+
+        // Clone the partially-consumed iterator
+        let mut cloned = iter.clone();
+        assert_eq!(cloned.next(), Some(2));
+        assert_eq!(cloned.next(), Some(3));
+        assert_eq!(cloned.next(), None);
+
+        // Original still works
+        assert_eq!(iter.next(), Some(2));
+    }
+
+    #[test]
+    fn into_iter_clone_exhausted() {
+        let v: Vec<u8, 4> = Vec::new();
+        let mut iter = v.into_iter();
+        assert_eq!(iter.next(), None);
+        // Clone an exhausted iterator
+        let mut cloned = iter.clone();
+        assert_eq!(cloned.next(), None);
+    }
+
+    #[test]
+    fn eq_two_vecs() {
+        let mut a: Vec<u8, 4> = Vec::new();
+        let mut b: Vec<u8, 8> = Vec::new();
+        assert!(a == b);
+        assert!(a.push(1).is_ok());
+        assert!(b.push(1).is_ok());
+        assert!(a == b);
+        assert!(b.push(2).is_ok());
+        assert!(a != b);
+    }
+
+    #[test]
+    fn as_vec_view_via_unsizing() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        // Unsize coercion to &VecView
+        let view: &VecView<u8> = &v;
+        assert_eq!(view.as_slice(), &[1, 2]);
+        // Mutable unsize coercion
+        let view_mut: &mut VecView<u8> = &mut v;
+        assert!(view_mut.push(3).is_ok());
+        assert_eq!(v.as_slice(), &[1, 2, 3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn insert_out_of_bounds() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        // index 5 > len 1, should panic
+        let _ = v.insert(5, 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn remove_out_of_bounds() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        // index 1 >= len 1, should panic
+        v.remove(1);
+    }
+
+    #[test]
+    fn clone_via_trait() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        // Call Clone trait explicitly (not the inherent method)
+        let v2 = Clone::clone(&v);
+        assert_eq!(v.as_slice(), v2.as_slice());
+    }
+
+    #[test]
+    fn from_iter_success() {
+        let v: Vec<u8, 4> = [1u8, 2, 3].into_iter().collect();
+        assert_eq!(v.len(), 3);
+        assert_eq!(v.as_slice(), &[1, 2, 3]);
     }
 }

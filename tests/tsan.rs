@@ -1,3 +1,4 @@
+#![cfg(not(feature = "certified_subset"))]
 #![deny(rust_2018_compatibility)]
 #![deny(rust_2018_idioms)]
 
