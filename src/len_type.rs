@@ -85,8 +85,8 @@ pub trait Sealed:
 
     /// An infallible conversion from `usize` to `LenT`.
     #[inline]
-    // Coverage: the unreachable!() error branch can never execute because LenType
-    // is only implemented for u32 and usize, both of which are infallible from usize.
+    // Coverage: the error branch is unreachable in practice because callers
+    // ensure the value fits within the LenT range (validated against capacity).
     #[cfg_attr(coverage_nightly, coverage(off))]
     fn from_usize(val: usize) -> Self {
         val.try_into().unwrap_or_else(|_| unreachable!())
@@ -94,8 +94,8 @@ pub trait Sealed:
 
     /// An infallible conversion from `LenT` to `usize`.
     #[inline]
-    // Coverage: the unreachable!() error branch can never execute because LenType
-    // is only implemented for u32 and usize, both of which convert infallibly to usize.
+    // Coverage: the error branch is unreachable because u32 and usize both
+    // convert infallibly to usize.
     #[cfg_attr(coverage_nightly, coverage(off))]
     fn into_usize(self) -> usize {
         self.try_into().unwrap_or_else(|_| unreachable!())

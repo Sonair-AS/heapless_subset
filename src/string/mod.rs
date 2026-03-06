@@ -1155,9 +1155,6 @@ impl_try_from_num!(u64, 20);
 mod tests {
     use crate::{String, Vec};
 
-    #[cfg(not(feature = "certified_subset"))]
-    use crate::CapacityError;
-
     // NOTE: Tests use `.ok().unwrap()` instead of `.unwrap()` because under
     // `certified_subset` the error type (`CapacityError`) does not implement
     // `Debug`, which `.unwrap()` requires for its panic message.

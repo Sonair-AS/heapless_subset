@@ -2517,7 +2517,6 @@ mod tests {
         assert_eq!(cloned.next(), None);
     }
 
-
     #[test]
     fn eq_two_vecs() {
         let mut a: Vec<u8, 4> = Vec::new();
