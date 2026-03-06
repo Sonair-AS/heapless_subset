@@ -1158,6 +1158,10 @@ mod tests {
     #[cfg(not(feature = "certified_subset"))]
     use crate::CapacityError;
 
+    // NOTE: Tests use `.ok().unwrap()` instead of `.unwrap()` because under
+    // `certified_subset` the error type (`CapacityError`) does not implement
+    // `Debug`, which `.unwrap()` requires for its panic message.
+
     #[test]
     fn static_new() {
         static mut _S: String<8> = String::new();
