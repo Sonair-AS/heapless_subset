@@ -215,6 +215,8 @@ pub mod vec;
 // FIXME: Workaround a compiler ICE in rust 1.83 to 1.86
 // https://github.com/rust-lang/rust/issues/138979#issuecomment-2760839948
 #[expect(dead_code)]
+// Coverage: intentionally dead code, only exists to work around a compiler ICE.
+#[cfg_attr(coverage_nightly, coverage(off))]
 fn dead_code_ice_workaround() {}
 
 #[cfg(feature = "serde")]
