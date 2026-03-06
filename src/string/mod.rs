@@ -1153,7 +1153,10 @@ impl_try_from_num!(u64, 20);
 
 #[cfg(test)]
 mod tests {
-    use crate::{CapacityError, String, Vec};
+    use crate::{String, Vec};
+
+    #[cfg(not(feature = "certified_subset"))]
+    use crate::CapacityError;
 
     #[test]
     fn static_new() {
@@ -1162,14 +1165,15 @@ mod tests {
 
     #[test]
     fn clone() {
-        let s1: String<20> = String::try_from("abcd").unwrap();
+        let s1: String<20> = String::try_from("abcd").ok().unwrap();
         let mut s2 = s1.clone();
-        s2.push_str(" efgh").unwrap();
+        s2.push_str(" efgh").ok().unwrap();
 
-        assert_eq!(s1, "abcd");
-        assert_eq!(s2, "abcd efgh");
+        assert_eq!(s1.as_str(), "abcd");
+        assert_eq!(s2.as_str(), "abcd efgh");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn cmp() {
         let s1: String<4> = String::try_from("abcd").unwrap();
@@ -1178,6 +1182,7 @@ mod tests {
         assert!(s1 < s2);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn cmp_heterogenous_size() {
         let s1: String<4> = String::try_from("abcd").unwrap();
@@ -1186,6 +1191,7 @@ mod tests {
         assert!(s1 < s2);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn debug() {
         use core::fmt::Write;
@@ -1196,6 +1202,7 @@ mod tests {
         assert_eq!("\"abcd\"", std_s);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn display() {
         use core::fmt::Write;
@@ -1209,32 +1216,37 @@ mod tests {
     #[test]
     fn empty() {
         let s: String<4> = String::new();
-        assert!(s.capacity() == 4);
-        assert_eq!(s, "");
+        assert_eq!(s.capacity(), 4);
         assert_eq!(s.len(), 0);
-        assert_ne!(s.len(), 4);
+        assert!(s.is_empty());
     }
 
     #[test]
     fn try_from() {
-        let s: String<4> = String::try_from("123").unwrap();
+        let s: String<4> = String::try_from("123").ok().unwrap();
         assert!(s.len() == 3);
-        assert_eq!(s, "123");
+        assert_eq!(s.as_str(), "123");
 
-        let _: CapacityError = String::<2>::try_from("123").unwrap_err();
+        // Success and error for same N to cover both paths of the instantiation
+        let s2: String<2> = String::try_from("ab").ok().unwrap();
+        assert_eq!(s2.as_str(), "ab");
+        assert!(String::<2>::try_from("abc").is_err());
     }
 
     #[test]
     fn from_str() {
         use core::str::FromStr;
 
-        let s: String<4> = String::<4>::from_str("123").unwrap();
+        let s: String<4> = String::<4>::from_str("123").ok().unwrap();
         assert!(s.len() == 3);
-        assert_eq!(s, "123");
+        assert_eq!(s.as_str(), "123");
 
-        let _: CapacityError = String::<2>::from_str("123").unwrap_err();
+        let s2: String<2> = String::<2>::from_str("ab").ok().unwrap();
+        assert_eq!(s2.as_str(), "ab");
+        assert!(String::<2>::from_str("abc").is_err());
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn from_iter() {
         let mut v: Vec<char, 5> = Vec::new();
@@ -1249,12 +1261,14 @@ mod tests {
         assert_eq!(string2, "hello");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     #[should_panic]
     fn from_panic() {
         let _: String<4> = String::try_from("12345").unwrap();
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn try_from_num() {
         let v: String<20> = String::try_from(18446744073709551615_u64).unwrap();
@@ -1265,25 +1279,21 @@ mod tests {
 
     #[test]
     fn into_bytes() {
-        let s: String<4> = String::try_from("ab").unwrap();
+        let s: String<4> = String::try_from("ab").ok().unwrap();
         let b: Vec<u8, 4> = s.into_bytes();
         assert_eq!(b.len(), 2);
-        assert_eq!(b"ab", &b[..]);
+        assert_eq!(b.as_slice(), b"ab");
     }
 
     #[test]
     fn as_str() {
-        let s: String<4> = String::try_from("ab").unwrap();
-
+        let s: String<4> = String::try_from("ab").ok().unwrap();
         assert_eq!(s.as_str(), "ab");
-        // should be moved to fail test
-        //    let _s = s.as_str();
-        // s.push('c'); // <- cannot borrow `s` as mutable because it is also borrowed as immutable
     }
 
     #[test]
     fn as_mut_str() {
-        let mut s: String<4> = String::try_from("ab").unwrap();
+        let mut s: String<4> = String::try_from("ab").ok().unwrap();
         let s = s.as_mut_str();
         s.make_ascii_uppercase();
         assert_eq!(s, "AB");
@@ -1291,15 +1301,14 @@ mod tests {
 
     #[test]
     fn push_str() {
-        let mut s: String<8> = String::try_from("foo").unwrap();
+        let mut s: String<8> = String::try_from("foo").ok().unwrap();
         assert!(s.push_str("bar").is_ok());
-        assert_eq!("foobar", s);
-        assert_eq!(s, "foobar");
+        assert_eq!(s.as_str(), "foobar");
         assert!(s.push_str("tender").is_err());
-        assert_eq!("foobar", s);
-        assert_eq!(s, "foobar");
+        assert_eq!(s.as_str(), "foobar");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn push() {
         let mut s: String<6> = String::try_from("abc").unwrap();
@@ -1312,10 +1321,11 @@ mod tests {
 
     #[test]
     fn as_bytes() {
-        let s: String<8> = String::try_from("hello").unwrap();
-        assert_eq!(&[104, 101, 108, 108, 111], s.as_bytes());
+        let s: String<8> = String::try_from("hello").ok().unwrap();
+        assert_eq!(s.as_bytes(), &[104, 101, 108, 108, 111]);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn truncate() {
         let mut s: String<8> = String::try_from("hello").unwrap();
@@ -1327,6 +1337,7 @@ mod tests {
         assert_eq!(s, "he");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn pop() {
         let mut s: String<8> = String::try_from("foo").unwrap();
@@ -1336,6 +1347,7 @@ mod tests {
         assert_eq!(s.pop(), None);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn pop_uenc() {
         let mut s: String<8> = String::try_from("é").unwrap();
@@ -1351,21 +1363,22 @@ mod tests {
 
     #[test]
     fn is_empty() {
-        let mut v: String<8> = String::new();
-        assert!(v.is_empty());
-        let _ = v.push('a');
-        assert!(!v.is_empty());
+        let s: String<8> = String::new();
+        assert!(s.is_empty());
+        let s2: String<8> = String::try_from("a").ok().unwrap();
+        assert!(!s2.is_empty());
     }
 
     #[test]
     fn clear() {
-        let mut s: String<8> = String::try_from("foo").unwrap();
+        let mut s: String<8> = String::try_from("foo").ok().unwrap();
         s.clear();
         assert!(s.is_empty());
-        assert_eq!(0, s.len());
-        assert_eq!(8, s.capacity());
+        assert_eq!(s.len(), 0);
+        assert_eq!(s.capacity(), 8);
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn remove() {
         let mut s: String<8> = String::try_from("foo").unwrap();
@@ -1373,6 +1386,7 @@ mod tests {
         assert_eq!(s.as_str(), "oo");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn remove_uenc() {
         let mut s: String<8> = String::try_from("ĝėēƶ").unwrap();
@@ -1382,6 +1396,7 @@ mod tests {
         assert_eq!(s.as_str(), "ĝ");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn remove_uenc_combo_characters() {
         let mut s: String<8> = String::try_from("héy").unwrap();
@@ -1389,6 +1404,7 @@ mod tests {
         assert_eq!(s.as_str(), "hey");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn format() {
         let number = 5;
@@ -1396,6 +1412,7 @@ mod tests {
         let formatted = format!(15; "{:0>3} plus {float}", number).unwrap();
         assert_eq!(formatted, "005 plus 3.12");
     }
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn format_inferred_capacity() {
         let number = 5;
@@ -1404,6 +1421,7 @@ mod tests {
         assert_eq!(formatted, "005 plus 3.12");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn format_overflow() {
         let i = 1234567;
@@ -1411,12 +1429,14 @@ mod tests {
         assert_eq!(formatted, Err(core::fmt::Error));
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn format_plain_string_overflow() {
         let formatted = format!(2; "123");
         assert_eq!(formatted, Err(core::fmt::Error));
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn insert() {
         let mut s: String<6> = String::try_from("123").unwrap();
@@ -1434,6 +1454,7 @@ mod tests {
         assert_eq!(s, "a1b234");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn insert_unicode() {
         let mut s: String<21> = String::try_from("ĝėēƶ").unwrap();
@@ -1454,6 +1475,7 @@ mod tests {
         assert_eq!(s, "🦀ĝ🦀ėēƶ🦀");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     #[should_panic = "index must be a char boundary"]
     fn insert_at_non_char_boundary_panics() {
@@ -1461,6 +1483,7 @@ mod tests {
         _ = s.insert(1, 'a');
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     #[should_panic = "index must be a char boundary"]
     fn insert_beyond_length_panics() {
@@ -1468,6 +1491,7 @@ mod tests {
         _ = s.insert(2, 'a');
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn insert_str() {
         let mut s: String<14> = String::try_from("bar").unwrap();
@@ -1485,6 +1509,7 @@ mod tests {
         assert_eq!(s, "foobazbarend");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     fn insert_str_unicode() {
         let mut s: String<20> = String::try_from("Héllô").unwrap();
@@ -1502,6 +1527,7 @@ mod tests {
         assert_eq!(s, "Hélp, í'm lôst");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     #[should_panic = "index must be a char boundary"]
     fn insert_str_at_non_char_boundary_panics() {
@@ -1509,10 +1535,122 @@ mod tests {
         _ = s.insert_str(1, "a");
     }
 
+    #[cfg(not(feature = "certified_subset"))]
     #[test]
     #[should_panic = "index must be a char boundary"]
     fn insert_str_beyond_length_panics() {
         let mut s: String<8> = String::try_from("a").unwrap();
         _ = s.insert_str(2, "a");
+    }
+
+    #[test]
+    fn default() {
+        let s: String<4> = Default::default();
+        assert!(s.is_empty());
+    }
+
+    #[test]
+    fn as_view() {
+        let s: String<8> = String::try_from("hello").ok().unwrap();
+        let view = s.as_view();
+        assert_eq!(view.as_str(), "hello");
+        // Call as_view on a StringView to cover ViewVecStorage impl
+        let view2 = view.as_view();
+        assert_eq!(view2.as_str(), "hello");
+    }
+
+    #[test]
+    fn as_mut_view() {
+        let mut s: String<8> = String::try_from("hi").ok().unwrap();
+        let view = s.as_mut_view();
+        // Call as_mut_view on a StringView to cover ViewVecStorage impl
+        let view2 = view.as_mut_view();
+        assert!(view2.push_str("!!").is_ok());
+        assert_eq!(s.as_str(), "hi!!");
+    }
+
+    #[test]
+    fn from_utf8() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.extend_from_slice(&[104, 101]).is_ok());
+        let s: String<4> = String::from_utf8(v).ok().unwrap();
+        assert_eq!(s.as_str(), "he");
+
+        let mut bad: Vec<u8, 4> = Vec::new();
+        assert!(bad.extend_from_slice(&[0, 159, 146, 150]).is_ok());
+        assert!(String::<4>::from_utf8(bad).is_err());
+    }
+
+    #[test]
+    fn from_utf8_unchecked() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.extend_from_slice(b"hi").is_ok());
+        let s: String<4> = unsafe { String::from_utf8_unchecked(v) };
+        assert_eq!(s.as_str(), "hi");
+    }
+
+    #[test]
+    fn as_mut_vec() {
+        let mut s: String<8> = String::try_from("hello").ok().unwrap();
+        unsafe {
+            let vec = s.as_mut_vec();
+            vec.reverse();
+        }
+        assert_eq!(s.as_str(), "olleh");
+    }
+
+    #[test]
+    fn deref_to_str() {
+        let s: String<8> = String::try_from("hello").ok().unwrap();
+        assert!(s.starts_with("hel"));
+        assert!(s.contains("ell"));
+    }
+
+    #[test]
+    fn deref_mut() {
+        let mut s: String<8> = String::try_from("ABC").ok().unwrap();
+        s.make_ascii_lowercase();
+        assert_eq!(s.as_str(), "abc");
+    }
+
+    #[cfg(not(feature = "certified_subset"))]
+    #[test]
+    fn as_ref_str() {
+        let s: String<8> = String::try_from("hi").ok().unwrap();
+        let r: &str = AsRef::<str>::as_ref(&s);
+        assert_eq!(r, "hi");
+    }
+
+    #[cfg(not(feature = "certified_subset"))]
+    #[test]
+    fn as_ref_bytes() {
+        let s: String<8> = String::try_from("hi").ok().unwrap();
+        let r: &[u8] = AsRef::<[u8]>::as_ref(&s);
+        assert_eq!(r, b"hi");
+    }
+
+    #[test]
+    fn partial_eq_string() {
+        let s1: String<4> = String::try_from("abc").ok().unwrap();
+        let s2: String<4> = String::try_from("abc").ok().unwrap();
+        let s3: String<4> = String::try_from("xyz").ok().unwrap();
+        assert!(s1 == s2);
+        assert!(s1 != s3);
+
+        // Cross-N comparison
+        let s4: String<8> = String::try_from("abc").ok().unwrap();
+        assert!(s1 == s4);
+    }
+
+    #[cfg(not(feature = "certified_subset"))]
+    #[test]
+    fn partial_eq_str() {
+        let s: String<8> = String::try_from("abc").ok().unwrap();
+        // String == &str
+        assert!(s == "abc");
+        // &str == String
+        assert!("abc" == s);
+        // String == str (via deref on &str)
+        assert!(*"abc" == *s.as_view());
     }
 }
