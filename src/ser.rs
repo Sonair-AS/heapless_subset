@@ -1,12 +1,9 @@
-//use core::hash::{BuildHasher, Hash};
-
 use crate::{
     len_type::LenType,
     string::{StringInner, StringStorage},
     vec::{VecInner, VecStorage},
 };
 use serde::ser::{Serialize, SerializeSeq, Serializer};
-//use serde::ser::SerializeMap;
 
 // Sequential containers
 

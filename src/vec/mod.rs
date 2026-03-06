@@ -39,6 +39,10 @@ mod storage {
     use crate::binary_heap::{BinaryHeapInner, BinaryHeapView};
     #[cfg(not(feature = "certified_subset"))]
     use crate::deque::{DequeInner, DequeView};
+    // `LenType`, `VecInner`, and `VecView` are only needed here for the
+    // `as_vec_view` / `as_vec_view_mut` sealed trait methods, which are
+    // excluded from the certified subset (the subset uses unsizing coercions
+    // instead of explicit view conversion).
     #[cfg(not(feature = "certified_subset"))]
     use crate::len_type::LenType;
 
@@ -2512,6 +2516,7 @@ mod tests {
         let mut cloned = iter.clone();
         assert_eq!(cloned.next(), None);
     }
+
 
     #[test]
     fn eq_two_vecs() {
