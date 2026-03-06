@@ -954,6 +954,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> borrow::BorrowMut<str> for String
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<str> for StringInner<LenT, S> {
     #[inline]
     fn as_ref(&self) -> &str {
@@ -961,6 +962,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<str> for StringInner<LenT, 
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> AsRef<[u8]> for StringInner<LenT, S> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
@@ -976,6 +978,7 @@ impl<LenT1: LenType, LenT2: LenType, S1: StringStorage + ?Sized, S2: StringStora
     }
 }
 
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
@@ -984,6 +987,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<str> for StringInner<Le
 }
 
 // String<N> == &'str
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<LenT, S> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
@@ -992,6 +996,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<&str> for StringInner<L
 }
 
 // str == String<N>
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
@@ -1000,6 +1005,7 @@ impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> f
 }
 
 // &'str == String<N>
+#[cfg(not(feature = "certified_subset"))]
 impl<LenT: LenType, S: StringStorage + ?Sized> PartialEq<StringInner<LenT, S>> for &str {
     #[inline]
     fn eq(&self, other: &StringInner<LenT, S>) -> bool {
