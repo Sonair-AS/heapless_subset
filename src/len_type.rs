@@ -145,6 +145,10 @@ impl_lentype!(
     usize
 );
 
+// Coverage: the error branch is unreachable because it is impossible to 
+// create an instantiation of this function that can cover all regions of both the
+// error path and the success path (panic returns before the closing  bracket `}`).
+#[cfg_attr(coverage_nightly, coverage(off))]
 pub const fn check_capacity_fits<LenT: LenType, const N: usize>() {
     assert!(LenT::MAX_USIZE >= N, "The capacity is larger than `LenT` can hold, increase the size of `LenT` or reduce the capacity");
 }
@@ -239,5 +243,14 @@ mod tests {
     fn check_capacity_fits_u32() {
         check_capacity_fits::<u32, 0>();
         check_capacity_fits::<u32, 1024>();
+    }
+
+    #[test]
+    #[cfg(target_pointer_width = "64")]
+    #[should_panic(
+        expected = "The capacity is larger than `LenT` can hold, increase the size of `LenT` or reduce the capacity"
+    )]
+    fn check_capacity_fits_u32_panics_when_n_exceeds_u32_max() {
+        check_capacity_fits::<u32, { (u32::MAX as usize) + 1 }>();
     }
 }

@@ -1862,7 +1862,9 @@ mod tests {
 
     #[test]
     fn stack_new() {
-        let mut _v: Vec<i32, 4> = Vec::new();
+        let mut _v: Vec<u8, 6> = Vec::new();
+        assert_eq!(_v.len(), 0);
+        assert_eq!(_v.capacity(), 6);
     }
 
     #[test]
@@ -2022,8 +2024,13 @@ mod tests {
         v.push(1).unwrap();
         v.push(2).unwrap();
         v.push(3).unwrap();
+        assert_eq!(v.len(), 4);
+        assert_eq!(v.as_slice(), &[0, 1, 2, 3]);
+        assert!(v.is_full());
 
         assert!(v.push(4).is_err());
+        assert_eq!(v.len(), 4);
+        assert_eq!(v.as_slice(), &[0, 1, 2, 3]);
     }
 
     #[test]
@@ -2237,7 +2244,11 @@ mod tests {
         assert!(v.extend_from_slice(&[3]).is_ok());
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
-        assert!(v.extend_from_slice(&[4, 5]).is_err());
+        let result = v.extend_from_slice(&[4, 5]);
+        assert!(result.is_err());
+        // Test that error is of type CapacityError. 
+        // Note: assert! with matches! macro would introduce uncoverable code.
+        let _: crate::CapacityError = result.unwrap_err(); 
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
     }
@@ -2270,6 +2281,32 @@ mod tests {
         assert_eq!(v, Vec::<u8, 4>::from([1, 2, 3]));
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
+    }
+
+    #[test]
+    fn as_slice() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert_eq!(v.as_slice(), &[]);
+        assert!(v.push(1).is_ok());
+        assert_eq!(v.as_slice(), &[1]);
+        assert!(v.push(2).is_ok());
+        assert_eq!(v.as_slice(), &[1, 2]);
+        assert!(v.push(3).is_ok());
+        assert_eq!(v.as_slice(), &[1, 2, 3]);
+        assert!(v.push(4).is_ok());
+        assert_eq!(v.as_slice(), &[1, 2, 3, 4]);
+    }
+
+    #[test]
+    fn as_mut_slice() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert_eq!(v.as_mut_slice(), &[]);
+        assert!(v.push(1).is_ok());
+        
+        let slice = v.as_mut_slice();
+        assert_eq!(slice, &[1]);
+        slice[0] = 2;
+        assert_eq!(slice, &[2]);
     }
 
     #[test]
@@ -2417,12 +2454,37 @@ mod tests {
         v.clear();
         assert_eq!(v.len(), 0);
     }
+    
+    #[test]
+    fn clear_empty_vec() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        v.clear();
+        assert_eq!(v.len(), 0);
+    }
 
     #[test]
     fn extend_inherent() {
         let mut v: Vec<u8, 4> = Vec::new();
         v.extend([1u8, 2, 3].iter().cloned());
         assert_eq!(v.as_slice(), &[1, 2, 3]);
+    }
+    
+    #[test]
+    #[should_panic]
+    fn extend_out_of_bounds() {
+        let mut v: Vec<u8, 2> = Vec::new();
+        v.extend([1u8, 2, 3].iter().cloned());
+    }
+
+    #[test]
+    fn truncate() {
+        let mut v: Vec<u8, 4> = Vec::new();
+        assert!(v.push(1).is_ok());
+        assert!(v.push(2).is_ok());
+        assert!(v.push(3).is_ok());
+        v.truncate(2);
+        assert_eq!(v.len(), 2);
+        assert_eq!(v.as_slice(), &[1, 2]);
     }
 
     #[test]
@@ -2439,22 +2501,31 @@ mod tests {
     fn set_len_and_insert_remove() {
         let mut v: Vec<u8, 4> = Vec::new();
         assert!(v.push(1).is_ok());
+        assert!(v.push(3).is_ok());
 
         // insert at beginning
         assert!(v.insert(0, 0).is_ok());
-        assert_eq!(v.as_slice(), &[0, 1]);
+        assert_eq!(v.as_slice(), &[0, 1, 3]);
 
         // insert in middle
-        assert!(v.insert(1, 10).is_ok());
-        assert_eq!(v.as_slice(), &[0, 10, 1]);
+        assert!(v.insert(2, 2).is_ok());
+        assert_eq!(v.as_slice(), &[0, 1, 2, 3]);
+
+        // remove from end
+        assert_eq!(v.remove(3), 3);
+        assert_eq!(v.as_slice(), &[0, 1, 2]);
+
+        // insert at end
+        assert!(v.insert(3, 3).is_ok());
+        assert_eq!(v.as_slice(), &[0, 1, 2, 3]);
 
         // remove from middle
-        assert_eq!(v.remove(1), 10);
-        assert_eq!(v.as_slice(), &[0, 1]);
+        assert_eq!(v.remove(1), 1);
+        assert_eq!(v.as_slice(), &[0, 2, 3]);
 
         // remove from beginning
         assert_eq!(v.remove(0), 0);
-        assert_eq!(v.as_slice(), &[1]);
+        assert_eq!(v.as_slice(), &[2, 3]);
     }
 
     #[test]

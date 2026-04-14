@@ -1287,6 +1287,14 @@ mod tests {
     }
 
     #[test]
+    fn into_bytes_empty() {
+        let s: String<4> = String::new();
+        let b: Vec<u8, 4> = s.into_bytes();
+        assert_eq!(b.len(), 0);
+        assert_eq!(b.as_slice(), b"");
+    }
+
+    #[test]
     fn as_str() {
         let s: String<4> = String::try_from("ab").ok().unwrap();
         assert_eq!(s.as_str(), "ab");
@@ -1305,8 +1313,12 @@ mod tests {
         let mut s: String<8> = String::try_from("foo").ok().unwrap();
         assert!(s.push_str("bar").is_ok());
         assert_eq!(s.as_str(), "foobar");
-        assert!(s.push_str("tender").is_err());
+        assert_eq!(s.len(), 6);
+        // Test that error is of type CapacityError. 
+        // Note: assert! with matches! macro would introduce uncoverable code.
+        let _: crate::CapacityError = s.push_str("tender").unwrap_err();
         assert_eq!(s.as_str(), "foobar");
+        assert_eq!(s.len(), 6);
     }
 
     #[cfg(not(feature = "certified_subset"))]
@@ -1373,6 +1385,16 @@ mod tests {
     #[test]
     fn clear() {
         let mut s: String<8> = String::try_from("foo").ok().unwrap();
+        s.clear();
+        assert!(s.is_empty());
+        assert_eq!(s.len(), 0);
+        assert_eq!(s.capacity(), 8);
+    }
+
+    #[test]
+    fn clear_empty() {
+        let mut s: String<8> = String::new();
+        assert_eq!(s.len(), 0);
         s.clear();
         assert!(s.is_empty());
         assert_eq!(s.len(), 0);
@@ -1576,6 +1598,7 @@ mod tests {
         assert!(v.extend_from_slice(&[104, 101]).is_ok());
         let s: String<4> = String::from_utf8(v).ok().unwrap();
         assert_eq!(s.as_str(), "he");
+        assert_eq!(s.len(), 2);
 
         let mut bad: Vec<u8, 4> = Vec::new();
         assert!(bad.extend_from_slice(&[0, 159, 146, 150]).is_ok());
