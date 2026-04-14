@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added `certified_subset` feature flag to gate code not needed for certified builds.
 - Added `coverage_nightly` cfg support for `cargo llvm-cov` instrumentation.
-- Added 100% test coverage for `vec`, `string`, and `len_type` modules under `certified_subset`.
+- Added 100% test coverage for `vec`, `string`, and `len_type` modules under `certified_subset`. 
 
 ### Changed
 
