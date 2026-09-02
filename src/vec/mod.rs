@@ -2,13 +2,21 @@
 
 #[cfg(not(feature = "certified_subset"))]
 use core::borrow;
+#[cfg(not(feature = "certified_subset"))]
+use core::cmp::Ordering;
 #[cfg(any(feature = "debugfmt", not(feature = "certified_subset")))]
 use core::fmt;
 #[cfg(not(feature = "certified_subset"))]
 use core::hash;
 use core::marker::PhantomData;
 #[cfg(not(feature = "certified_subset"))]
+use core::mem;
+#[cfg(not(feature = "certified_subset"))]
+use core::mem::ManuallyDrop;
+#[cfg(not(feature = "certified_subset"))]
 use core::ops::Range;
+#[cfg(not(feature = "certified_subset"))]
+use core::ops::RangeBounds;
 #[cfg(not(feature = "certified_subset"))]
 use core::ptr::NonNull;
 use core::{
@@ -17,14 +25,6 @@ use core::{
     ptr::{self},
     slice,
 };
-#[cfg(not(feature = "certified_subset"))]
-use core::mem::ManuallyDrop;
-#[cfg(not(feature = "certified_subset"))]
-use core::mem;
-#[cfg(not(feature = "certified_subset"))]
-use core::cmp::Ordering;
-#[cfg(not(feature = "certified_subset"))]
-use core::ops::RangeBounds;
 
 use crate::len_type::{check_capacity_fits, LenType};
 use crate::CapacityError;
@@ -788,7 +788,10 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// If `new_len` is greater than len, the Vec is extended by the
     /// difference, with each additional slot filled with value. If
     /// `new_len` is less than len, the Vec is simply truncated.
-    #[cfg_attr(not(feature = "certified_subset"), doc = "See also [`resize_default`](Self::resize_default).")]
+    #[cfg_attr(
+        not(feature = "certified_subset"),
+        doc = "See also [`resize_default`](Self::resize_default)."
+    )]
     ///
     pub fn resize(&mut self, new_len: usize, value: T) -> Result<(), CapacityError>
     where
@@ -2244,9 +2247,9 @@ mod tests {
         assert_eq!(v.as_slice(), &[1, 2, 3]);
         let result = v.extend_from_slice(&[4, 5]);
         assert!(result.is_err());
-        // Test that error is of type CapacityError. 
+        // Test that error is of type CapacityError.
         // Note: assert! with matches! macro would introduce uncoverable code.
-        let _: crate::CapacityError = result.unwrap_err(); 
+        let _: crate::CapacityError = result.unwrap_err();
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
     }
@@ -2300,7 +2303,7 @@ mod tests {
         let mut v: Vec<u8, 4> = Vec::new();
         assert_eq!(v.as_mut_slice(), &[]);
         assert!(v.push(1).is_ok());
-        
+
         let slice = v.as_mut_slice();
         assert_eq!(slice, &[1]);
         slice[0] = 2;
@@ -2452,7 +2455,7 @@ mod tests {
         v.clear();
         assert_eq!(v.len(), 0);
     }
-    
+
     #[test]
     fn clear_empty_vec() {
         let mut v: Vec<u8, 4> = Vec::new();
@@ -2466,7 +2469,7 @@ mod tests {
         v.extend([1u8, 2, 3].iter().cloned());
         assert_eq!(v.as_slice(), &[1, 2, 3]);
     }
-    
+
     #[test]
     #[should_panic]
     fn extend_out_of_bounds() {
@@ -2645,5 +2648,130 @@ mod tests {
         let v: Vec<u8, 4> = [1u8, 2, 3].into_iter().collect();
         assert_eq!(v.len(), 3);
         assert_eq!(v.as_slice(), &[1, 2, 3]);
+    }
+
+    fn make_test_vector<const N: usize>() -> Vec<usize, N> {
+        let test_array: [usize; N] = core::array::from_fn(|index| index);
+        test_array.into_iter().collect()
+    }
+
+    #[test]
+    fn test_retain_all() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v < N;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == N);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(index == *value);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_remove_all() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v > N;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.is_empty());
+    }
+
+    #[test]
+    fn test_retain_interleaved() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| v.is_multiple_of(2);
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == N / 2);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(*value == index * 2);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_remove_first_block() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v >= 10;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == N - 10);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(*value == index + 10);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_retain_first_block() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v < 10;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == 10);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(*value == index);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_retain_last_block() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v >= 90;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == 10);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(*value == index + 90);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_remove_last_block() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| *v < 90;
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == N - 10);
+        for (index, value) in test_vector.iter().enumerate() {
+            assert!(*value == index);
+            assert!(predicate(value));
+        }
+    }
+
+    #[test]
+    fn test_retain_inner_blocks() {
+        const N: usize = 100;
+        let mut test_vector = make_test_vector::<N>();
+
+        let predicate = |v: &usize| (10..20).contains(v) || (70..80).contains(v);
+
+        test_vector.retain(&predicate);
+        assert!(test_vector.len() == 20);
+        for (index, value) in test_vector.iter().enumerate().take(10) {
+            assert!(*value == index + 10);
+            assert!(predicate(value));
+        }
+        for (index, value) in test_vector.iter().skip(10).enumerate() {
+            assert!(*value == index + 70);
+            assert!(predicate(value));
+        }
     }
 }
