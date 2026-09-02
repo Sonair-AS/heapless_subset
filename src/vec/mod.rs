@@ -1167,7 +1167,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// vec.retain(|_| *iter.next().unwrap());
     /// assert_eq!(vec, [2, 3, 5]);
     /// ```
-    #[cfg(not(feature = "certified_subset"))]
     pub fn retain<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> bool,
@@ -1197,7 +1196,6 @@ impl<T, LenT: LenType, S: VecStorage<T> + ?Sized> VecInner<T, LenT, S> {
     /// });
     /// assert_eq!(vec, [2, 3, 4]);
     /// ```
-    #[cfg(not(feature = "certified_subset"))]
     pub fn retain_mut<F>(&mut self, mut f: F)
     where
         F: FnMut(&mut T) -> bool,
